@@ -1,0 +1,85 @@
+TIME FLOW — Java 21 + JavaFX  |  Estrutura do Projeto Maven
+═══════════════════════════════════════════════════════════════
+
+timeflow-java/
+│
+├── pom.xml                              ← Dependências Maven (JavaFX, JNA, InfluxDB, Update4j)
+│
+├── src/
+│   └── main/
+│       ├── java/
+│       │   └── com/timeflow/
+│       │       │
+│       │       ├── launcher/
+│       │       │   └── TimeFlowLauncher.java   ← Entry point (Update4j-aware)
+│       │       │
+│       │       ├── app/
+│       │       │   └── TimeFlowApp.java         ← Application JavaFX principal
+│       │       │
+│       │       ├── controller/                  ← MVC — Controladores
+│       │       │   ├── MainController.java
+│       │       │   ├── TrackerController.java
+│       │       │   └── AnalyticsController.java
+│       │       │
+│       │       ├── model/                       ← MVC — Modelos de Dados
+│       │       │   ├── Session.java
+│       │       │   └── AppUsage.java
+│       │       │
+│       │       ├── service/                     ← Lógica de negócio / background
+│       │       │   ├── AgenteInvisivel.java     ← Worker de rastreamento (JNA + JavaFX Service)
+│       │       │   ├── DatabaseHandler.java     ← InfluxDB Cloud
+│       │       │   └── HistoricoService.java    ← Busca histórico em background
+│       │       │
+│       │       ├── components/                  ← Componentes visuais customizados
+│       │       │   ├── RingProgress.java        ← Anel de progresso (Canvas)
+│       │       │   ├── PillBadge.java           ← Badge status arredondado
+│       │       │   ├── NavItem.java             ← Item da sidebar
+│       │       │   ├── StatCard.java            ← Card de métricas
+│       │       │   └── SessionRow.java          ← Linha de histórico
+│       │       │
+│       │       └── config/
+│       │           ├── AppConfig.java           ← InfluxDB URL, Token, Org, Bucket
+│       │           └── Theme.java               ← Paleta de cores (constants)
+│       │
+│       └── resources/
+│           ├── fxml/
+│           │   ├── main.fxml                    ← Layout BorderPane principal
+│           │   ├── tracker.fxml                 ← Aba Tracker
+│           │   └── analytics.fxml               ← Aba Analytics
+│           │
+│           ├── css/
+│           │   └── style.css                    ← TODOS os estilos (sem inline)
+│           │
+│           └── assets/
+│               └── icon.png
+│
+└── update4j/
+    └── launcher/
+        └── TimeFlowLauncher.java                ← Launcher separado (não entra no fat JAR da lógica)
+
+
+═══════════════════════════════════════════════════════════════
+ FLUXO ARQUITETURAL
+═══════════════════════════════════════════════════════════════
+
+  TimeFlowLauncher
+      │  (verifica update4j, baixa novo JAR se necessário)
+      ▼
+  TimeFlowApp  (JavaFX Application.start)
+      │
+      ├── MainController
+      │       ├── TrackerController   ←→  AgenteInvisivel (Service)
+      │       └── AnalyticsController ←→  HistoricoService (Task)
+      │
+      └── DatabaseHandler  (InfluxDB Cloud)
+
+
+═══════════════════════════════════════════════════════════════
+ SEPARAÇÃO LAUNCHER / LÓGICA (Update4j)
+═══════════════════════════════════════════════════════════════
+
+  • timeflow-launcher.jar   → NÃO É ATUALIZADO. Faz o bootstrap.
+  • timeflow-app.jar        → Atualizado via Update4j sem reinstalar.
+
+  O Launcher verifica o XML de configuração remoto do Update4j,
+  baixa o novo timeflow-app.jar e inicializa a aplicação.
