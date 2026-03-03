@@ -14,7 +14,7 @@ public final class AppConfig {
     public static final String INFLUX_URL    = "https://us-east-1-1.aws.cloud2.influxdata.com";
     public static final String INFLUX_TOKEN  = System.getenv().getOrDefault(
             "TIMEFLOW_INFLUX_TOKEN",
-            "3GthEe_SQy5nDZlyJZel86tCoiUvsJiRlRz61HT0G_MhwyaXcZm1u-tsORGoxhgTTFCu46YBpkO4pOOS72IjVQ=="
+            "SEU_TOKEN_AQUI"
     );
     public static final String INFLUX_ORG    = "ygorelizald@gmail.com";
     public static final String INFLUX_BUCKET = "Armazenamento";
@@ -45,7 +45,7 @@ public final class AppConfig {
 
     // ── Update4j ──────────────────────────────────────────────────────
     public static final String UPDATE4J_CONFIG_URL =
-            "https://sua-cdn.com/timeflow/update4j-config.xml";
+            "https://raw.githubusercontent.com/ygorelizalde/timeflow-jav/master/update4j-config.xml";
 
     // ── Categorias de apps ────────────────────────────────────────────
     public static final java.util.Map<String, java.util.List<String>> APP_CATEGORIES =
