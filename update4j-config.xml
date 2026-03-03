@@ -2,7 +2,7 @@
 <configuration timestamp="2026-03-03T15:00:00+00:00">
 
     <base uri="https://github.com/ygorelizalde/timeflow-jav/releases/download/v2.1.0/"
-          path="${user.home}/.timeflow/app/" />
+          path="%USERPROFILE%/.timeflow/app/" />
 
     <files>
         <file>
