@@ -1,12 +1,10 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<configuration timestamp="2026-03-03T15:00:00+00:00">
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration timestamp="2026-03-03T14:21:01+00:00">
     <files>
         <file>
-            <uri>https://github.com/ygorelizalde/timeflow-java-v2.1/releases/download/v2.1.0/timeflow-app-2.0.0.jar</uri>
+            <uri>https://github.com/ygorelizalde/timeflow-jav/releases/download/v2.1.0/timeflow-app.jar</uri>
             <path>${user.home}/.timeflow/app/timeflow-app.jar</path>
             <classpath>true</classpath>
-            <size>52428800</size>
-            <checksum>SHA-256-HASH-AQUI</checksum>
         </file>
     </files>
 </configuration>

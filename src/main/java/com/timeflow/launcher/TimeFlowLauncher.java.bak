@@ -1,0 +1,118 @@
+package com.timeflow.launcher;
+
+import org.update4j.Configuration;
+import org.update4j.UpdateOptions;
+
+import java.io.*;
+import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.StringReader;
+import java.io.Reader;
+import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class TimeFlowLauncher extends Application {
+
+    private static final String BASE_URI =
+        "https://github.com/ygorelizalde/timeflow-jav/releases/download/v2.1.0/";
+
+    private static final Path BASE_PATH =
+        Paths.get(System.getProperty("user.home"), ".timeflow", "app");
+
+    private static final Path CONFIG_CACHE = Paths.get(
+        System.getProperty("user.home"), 
+        ".timeflow", 
+        "update4j-config.xml"
+    );
+
+    public static void main(String[] args) {
+        System.out.println("[Launcher] Time Flow v2.0 iniciando...");
+
+        if (shouldCheckForUpdate(args)) {
+            checkAndUpdate();
+        }
+
+        com.timeflow.app.TimeFlowApp.launch(com.timeflow.app.TimeFlowApp.class, args);
+    }
+
+    private static boolean shouldCheckForUpdate(String[] args) {
+        for (String a : args) {
+            if ("--no-update".equals(a)) return false;
+        }
+        return true;
+    }
+
+    private static void checkAndUpdate() {
+        try {
+            System.out.println("[Launcher] Verificando atualizacoes...");
+
+            String remoteUrl = com.timeflow.config.AppConfig.UPDATE4J_CONFIG_URL;
+            Configuration config;
+
+            try {
+                HttpURLConnection conn = (HttpURLConnection) new URL(remoteUrl).openConnection();
+                conn.setRequestProperty("Accept", "application/xml, text/xml, */*");
+                conn.setConnectTimeout(8000);
+                conn.setReadTimeout(8000);
+
+                String xmlContent;
+                try (InputStream is = conn.getInputStream();
+                     ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                    byte[] buf = new byte[4096];
+                    int n;
+                    while ((n = is.read(buf)) != -1) bos.write(buf, 0, n);
+                    byte[] bytes = bos.toByteArray();
+                    int start = 0;
+                    if (bytes.length >= 3 &&
+                        bytes[0] == (byte)0xEF &&
+                        bytes[1] == (byte)0xBB &&
+                        bytes[2] == (byte)0xBF) start = 3;
+                    xmlContent = new String(bytes, start, bytes.length - start, StandardCharsets.UTF_8).trim();
+                }
+
+                Files.createDirectories(CONFIG_CACHE.getParent());
+                Files.writeString(CONFIG_CACHE, xmlContent, StandardCharsets.UTF_8);
+                config = Configuration.read(new StringReader(xmlContent));
+
+            } catch (Exception networkEx) {
+                System.out.println("[Launcher] Sem conexao para update: " + networkEx.getMessage());
+                if (Files.exists(CONFIG_CACHE)) {
+                    String cached = Files.readString(CONFIG_CACHE, StandardCharsets.UTF_8).trim();
+                    config = Configuration.read(new StringReader(cached));
+                } else {
+                    System.out.println("[Launcher] Nenhuma config local encontrada, pulando update.");
+                    return;
+                }
+            }
+
+            if (config.requiresUpdate()) {
+                System.out.println("[Launcher] Atualizacao disponivel. Baixando...");
+                config.update(UpdateOptions.archive(
+                    Paths.get(System.getProperty("user.home"), ".timeflow", "updates")
+                ));
+                System.out.println("[Launcher] Atualizacao aplicada. Reinicie o app.");
+            } else {
+                System.out.println("[Launcher] Aplicacao ja esta na versao mais recente.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("[Launcher] Update ignorado: " + e.getMessage());
+        }
+    }
+
+    private static void checkForUpdates() {
+        System.out.println("[Launcher] Verificando atualizacoes...");
+        System.out.println("[Launcher] Atualizacoes verificadas com sucesso.");
+    }
+
+    private static Configuration parseConfig(String xml) throws Exception {
+        try (Reader reader = new StringReader(xml)) {
+            return Configuration.read(reader);
+        }
+    }
+}

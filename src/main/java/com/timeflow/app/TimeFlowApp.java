@@ -56,9 +56,9 @@ public class TimeFlowApp extends Application {
     // ── App Principal ─────────────────────────────────────────────────
 
     private void mostrarApp() {
-        // MainController já usa PerfilSession para pegar perfilId e empresaId
+        // MainController já usa PerfilSession para pegar perfilId e empresaId 
         MainController mainCtrl = new MainController();
-
+        
         Scene appScene = new Scene(mainCtrl.getRoot(), 1280, 800);
         String css = getClass().getResource("/css/style.css").toExternalForm();
         appScene.getStylesheets().add(css);

@@ -1,92 +1,63 @@
 package com.timeflow.launcher;
 
 import org.update4j.Configuration;
-import org.update4j.UpdateOptions;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
 
-/**
- * TimeFlowLauncher — entry point separado do módulo de lógica.
- *
- * Responsabilidades:
- *  1. Verificar se há atualização disponível via Update4j
- *  2. Baixar e instalar o novo timeflow-app.jar se necessário
- *  3. Inicializar TimeFlowApp normalmente
- *
- * Este arquivo NUNCA é atualizado automaticamente (é o bootstrap).
- * Apenas o timeflow-app.jar é substituído nas atualizações.
- */
 public class TimeFlowLauncher {
 
-    // Caminho local do XML de configuração Update4j (cacheado)
-    private static final Path CONFIG_CACHE =
-        Paths.get(System.getProperty("user.home"), ".timeflow", "update4j-config.xml");
+    private static final String CONFIG_URL =
+        "https://github.com/ygorelizalde/timeflow-jav/releases/download/v2.1.0/config.xml";
 
     public static void main(String[] args) {
         System.out.println("[Launcher] Time Flow v2.0 iniciando...");
 
+        Configuration config = null;
+
+        // 1. Verifica e baixa atualizações da nuvem
         if (shouldCheckForUpdate(args)) {
-            checkAndUpdate();
+            try {
+                System.out.println("[Launcher] Verificando atualizacoes na nuvem...");
+                URL url = new URL(CONFIG_URL);
+                try (Reader reader = new InputStreamReader(url.openStream(), StandardCharsets.UTF_8)) {
+                    config = Configuration.read(reader);
+                }
+
+                if (config.requiresUpdate()) {
+                    System.out.println("[Launcher] Nova versao encontrada! Baixando arquivos...");
+                    config.update();
+                    System.out.println("[Launcher] Atualizacao concluida com sucesso.");
+                } else {
+                    System.out.println("[Launcher] O sistema ja esta na versao mais recente.");
+                }
+                
+            } catch (Exception e) {
+                System.out.println("[Launcher] Update ignorado (sem internet ou erro): " + e.getMessage());
+            }
         }
 
-        // Inicia a aplicação JavaFX
-        com.timeflow.app.TimeFlowApp.launch(com.timeflow.app.TimeFlowApp.class, args);
+        // 2. Inicia o aplicativo
+        try {
+            if (config != null) {
+                // Abre a versão que acabou de ser baixada e salva na pasta do usuário!
+                config.launch(); 
+            } else {
+                // Fallback: Se estiver sem internet, tenta abrir a versão local
+                com.timeflow.app.TimeFlowApp.launch(com.timeflow.app.TimeFlowApp.class, args);
+            }
+        } catch (Exception e) {
+            System.err.println("[Erro] Falha ao iniciar a interface grafica: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
-    // ── Update4j ──────────────────────────────────────────────────────
-
     private static boolean shouldCheckForUpdate(String[] args) {
-        // Pule update com argumento --no-update (útil em dev)
         for (String a : args) {
             if ("--no-update".equals(a)) return false;
         }
         return true;
-    }
-
-    private static void checkAndUpdate() {
-        try {
-            System.out.println("[Launcher] Verificando atualizações...");
-
-            // Tenta buscar configuração remota
-            String remoteUrl = com.timeflow.config.AppConfig.UPDATE4J_CONFIG_URL;
-            Configuration config;
-
-            try (Reader reader = new InputStreamReader(new URL(remoteUrl).openStream())) {
-                config = Configuration.read(reader);
-                // Persiste config localmente para uso offline
-                Files.createDirectories(CONFIG_CACHE.getParent());
-                config.write(Files.newBufferedWriter(CONFIG_CACHE));
-            } catch (Exception networkEx) {
-                System.out.println("[Launcher] Sem conexão para update, usando config local.");
-                if (Files.exists(CONFIG_CACHE)) {
-                    try (Reader r = Files.newBufferedReader(CONFIG_CACHE)) {
-                        config = Configuration.read(r);
-                    }
-                } else {
-                    System.out.println("[Launcher] Nenhuma config local encontrada, pulando update.");
-                    return;
-                }
-            }
-
-            if (config.requiresUpdate()) {
-                System.out.println("[Launcher] Atualização disponível. Baixando...");
-                config.update(UpdateOptions.archive(
-                    Paths.get(System.getProperty("user.home"), ".timeflow", "updates")
-                ));
-                System.out.println("[Launcher] Atualização aplicada. Reinicie o app.");
-                // Em produção: exibir diálogo JavaFX pedindo para reiniciar
-            } else {
-                System.out.println("[Launcher] Aplicação já está na versão mais recente.");
-            }
-
-        } catch (Exception e) {
-            // Update não é crítico — app continua normalmente
-            System.out.println("[Launcher] Update ignorado: " + e.getMessage());
-        }
     }
 }

@@ -18,6 +18,7 @@ com\timeflow\controller\SettingsController.class
 com\timeflow\components\PillBadge.class
 com\timeflow\controller\AnalyticsController.class
 com\timeflow\service\AgenteInvisivel$ExtUser32.class
+com\timeflow\launcher\UpdateConfigGenerator.class
 com\timeflow\launcher\TimeFlowLauncher.class
 com\timeflow\components\MiniWindow.class
 com\timeflow\config\AppConfig.class

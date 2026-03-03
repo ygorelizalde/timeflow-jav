@@ -14,7 +14,7 @@ public final class AppConfig {
     public static final String INFLUX_URL    = "https://us-east-1-1.aws.cloud2.influxdata.com";
     public static final String INFLUX_TOKEN  = System.getenv().getOrDefault(
             "TIMEFLOW_INFLUX_TOKEN",
-            "SEU_TOKEN_AQUI"
+            "6BTxLyK_7lXBSZeQAGI7nFisFref88vt4FHDiS7VwUN84t974mBAOQaG5QPO5Jf6xftaUdJ6RCBUL2oMqRJwew=="
     );
     public static final String INFLUX_ORG    = "ygorelizald@gmail.com";
     public static final String INFLUX_BUCKET = "Armazenamento";

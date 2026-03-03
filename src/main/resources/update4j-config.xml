@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <baseUri>https://github.com/ygorelizalde/timeflow-java-v2.1/releases/download/v2.1.0/</baseUri>
+    <basePath></basePath>
+    <files>
+        <file>
+            <path>timeflow-app.jar</path>
+            <uri>timeflow-app-2.0.0.jar</uri>
+            <size>0</size>
+            <checksum></checksum>
+        </file>
+    </files>
+</configuration>
